@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import Alert from "../components/Alert";
+import CommentSection from "../components/CommentSection";
 import PriorityBadge from "../components/PriorityBadge";
 import StatusBadge from "../components/StatusBadge";
 
@@ -150,6 +151,8 @@ export default function TicketDetail() {
           </div>
         </dl>
       </section>
+
+      <CommentSection ticketId={ticket.id} />
     </div>
   );
 }

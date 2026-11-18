@@ -21,6 +21,6 @@ def get_db() -> Generator[Session, None, None]:
 
 def create_tables() -> None:
     # Import models so their metadata is registered before create_all.
-    from app.models import Ticket, User, UserSession  # noqa: F401
+    from app.models import Comment, Ticket, User, UserSession  # noqa: F401
 
     Base.metadata.create_all(bind=engine)

@@ -62,6 +62,9 @@ export const api = {
   },
   createTicket: (payload) => apiRequest("/tickets", { method: "POST", body: payload }),
   ticket: (id) => apiRequest(`/tickets/${id}`),
+  comments: (id) => apiRequest(`/tickets/${id}/comments`),
+  addComment: (id, content) =>
+    apiRequest(`/tickets/${id}/comments`, { method: "POST", body: { content } }),
   updateTicket: (id, payload) => apiRequest(`/tickets/${id}`, { method: "PATCH", body: payload }),
   updateStatus: (id, status) =>
     apiRequest(`/tickets/${id}/status`, { method: "POST", body: { status } }),

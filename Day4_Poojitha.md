@@ -17,7 +17,7 @@
 
 ## 1. Product Prompt
 
-The complete original product prompt is preserved in [`PRODUCT_PROMPT.md`](PRODUCT_PROMPT.md). It defines the Employee Support Ticket Management Application, its roles, ticket rules, validation, status workflow, sample data, UI, database, security, testing, and staged delivery requirements. It also explicitly defers ticket comments to a later enhancement.
+The complete original product prompt is preserved in [`PRODUCT_PROMPT.md`](PRODUCT_PROMPT.md). It defines the Employee Support Ticket Management Application, its roles, ticket rules, validation, status workflow, sample data, UI, database, security, testing, and staged delivery requirements. It explicitly deferred ticket comments to a later enhancement; that enhancement was implemented separately and is recorded in section 13.
 
 No original requirement was removed or replaced. Review decisions RD-01 through RD-16 resolved open questions and are recorded in [`SPEC.md`](SPEC.md).
 
@@ -34,7 +34,7 @@ No original requirement was removed or replaced. Review decisions RD-01 through 
 - No arbitrary Employee account limit; no public Support Staff registration
 - Responsive professional UI and fully functional controls
 - Database reliability requirements
-- Comments excluded from initial scope
+- Comments excluded from initial scope (later added as the separate enhancement in section 13)
 
 ## 3. Plan
 
@@ -60,6 +60,18 @@ No original requirement was removed or replaced. Review decisions RD-01 through 
 >
 > Build the full React + Vite frontend and FastAPI + SQLAlchemy backend with SQLite/PostgreSQL-compatible configuration. Implement secure registration/login, backend-enforced Employee/Support Staff roles, dashboards, ticket creation, viewing, editing, filtering, and status updates. Enforce every validation, permission, database, and workflow rule in the specification. Employees access only their own tickets; Support Staff access all tickets and manage statuses. Make every visible UI control functional. No dummy buttons, placeholder pages, or fake functionality. Create a polished, responsive UI with readable fonts, consistent spacing, and no overlapping or clipped content. Ensure persistence, secure password hashing, session revocation, safe errors, and no hardcoded secrets. Test the complete workflows, fix defects, and commit each verified milestone to Git. Write a useful README.md with setup, run, and test instructions. Do not implement comments yet. Add them later as a separate enhancement, including comments on Closed tickets. Maintain PROGRESS.md with completed work, pending tasks, commands, test results, and the next step whenever you pause. Work efficiently, reuse existing files, and continue through implementation without asking for approval at every milestone. Never claim something works without testing it. Start now.
 
+### Ticket Comments Enhancement prompt
+
+> Implement the Ticket Comments enhancement in the existing Employee Support Ticket App.
+>
+> First inspect the current code and database structure. Preserve all existing functionality. Do not rebuild or unnecessarily modify existing modules.
+>
+> Employees can add comments to their own tickets. Support Staff can add comments to any ticket. Both roles can view comments they are authorized to access. Comments must also be allowed on Closed tickets. Store each comment with a unique ID, ticket ID, author, content, and creation timestamp. Display comments in chronological order with author and timestamp. Validate empty comments and trim surrounding whitespace. Adding a comment must never change ticket status. Enforce authorization and validation in the backend, not just the UI. Add a proper comment section to the ticket details interface, matching the existing design.
+>
+> Add automated backend tests for both roles, ownership, Closed tickets, validation, and status preservation. Run backend tests and frontend production build. Fix any failures. Update `README.md` and `PROGRESS.md`. Commit the verified enhancement separately with commit message: `Add ticket comments enhancement`.
+>
+> Do not remove existing data or break existing ticket functionality. Do not claim success without running the tests. Begin now.
+
 ## 5. What Was Generated
 
 - The specification was finalized and the implementation plan was created before code generation.
@@ -74,6 +86,8 @@ No original requirement was removed or replaced. Review decisions RD-01 through 
 | `b23edea` | FastAPI backend, database layer, authentication, ticket APIs, and tests | 21 backend tests passed after fixing the SQLite constraint defect |
 | `ecc49a8` | React + Vite frontend and genuine browser screenshots | Production build succeeded; live browser workflow smoke test passed |
 | `9453886` | Literal LIKE wildcard search defect fix | Full suite passed with 22 tests including the new regression test |
+| `5c44034` | Final setup, verification, and submission documentation | 22 tests passed; Vite production build succeeded |
+| This commit | Ticket Comments enhancement | 28 backend tests passed; Vite production build succeeded; live browser comment smoke test passed |
 
 No `.env`, database file, `node_modules`, or build output was committed. No production secrets or private keys appear in committed source; the seeded demonstration passwords shown in setup commands are local-only examples supplied through environment variables.
 
@@ -108,6 +122,11 @@ Captured in the in-app browser at an 800 px viewport while both servers were run
 | Employee access to another employee's ticket | Passed — backend 403 message displayed |
 | Missing ticket detail | Passed — backend 404 message displayed |
 | Horizontal page overflow at 800 px | None detected (`scrollWidth` 785 <= `innerWidth` 800) |
+| Support Staff comment on In Progress ticket | Passed — whitespace trimmed, author/time shown, status and Last Updated Date unchanged |
+| Support Staff comment on Closed ticket | Passed — status remained Closed |
+| Owning Employee views Support comment | Passed — author and role displayed on the Closed ticket |
+| Owning Employee comment on Closed ticket | Passed — chronological list updated, status unchanged |
+| Comment section console errors / overflow | None detected |
 
 Screenshots at additional desktop and phone widths: **Pending** — the available browser viewport was 800 px; no evidence was fabricated for other widths.
 
@@ -122,7 +141,7 @@ Command:
 Final result on 18 Nov 2026:
 
 ```text
-22 passed, 1 warning in 8.28s
+28 passed, 1 warning in 12.09s
 ```
 
 The warning is:
@@ -154,6 +173,7 @@ Coverage areas:
 - Constraints and relationships in SQLite schema
 - Idempotent sample seed and exact sample values
 - Literal handling of SQL LIKE wildcards
+- Comment authorization for both roles, Employee ownership, Closed tickets, empty/whitespace validation, unauthenticated access, chronological ordering, and status preservation
 
 ## 9. Defect Reports
 
@@ -180,7 +200,7 @@ Coverage areas:
 
 | Area | Review outcome |
 |---|---|
-| Input validation | Backend validates all ticket fields and registration fields; titles/descriptions/full names trimmed; passwords never trimmed; email normalized; max lengths enforced after trimming |
+| Input validation | Backend validates all ticket, registration, and comment fields; titles/descriptions/full names/comments trimmed; passwords never trimmed; email normalized; max ticket lengths enforced after trimming |
 | Secrets | No hardcoded passwords or tokens; `.env` ignored; only variable names in `.env.example`; seed and Support initialization require env variables or prompts |
 | Password security | Argon2 hashing; verification uses exact submitted password; hashes never returned by API |
 | Authorization | Role and ownership checked in backend services/dependencies; frontend hiding is not relied on for security; direct API checks verified by tests and browser |
@@ -188,11 +208,11 @@ Coverage areas:
 | Database handling | Single engine/session layer; relationships and constraints defined; multi-step writes committed once; rollback on integrity errors; idempotent seed; persistence verified through a new connection |
 | Code organization | Layered routes → services → models; shared API client and reusable frontend components; no duplicated database configuration |
 | Dependencies | Python dependencies pinned by minimum versions; frontend uses current React/Vite tooling. `npm audit` reports high-severity development-only advisories in Vite's `picomatch`/`fdir`/`tinyglobby` chain with no published fixed `picomatch` version; production build succeeds and the dev server should not be exposed publicly |
-| Scope | No comment model, API, UI, seed data, or display exists; comments remain a separate future enhancement |
+| Scope | The initial app excluded comments; the separately requested enhancement now adds a `Comment` model, backend endpoints, backend validation/authorization, and a ticket-detail UI section, including Closed tickets |
 
 ## 11. Known Gaps and Pending Items
 
-- Comments are intentionally not implemented.
+- Comments are implemented and verified, including on Closed tickets; no comment functionality remains pending.
 - GitHub repository link: **Pending** (no remote configured).
 - Screenshots at desktop and phone widths beyond 800 px: **Pending**.
 - PostgreSQL runtime test: **Pending** (configuration supports `DATABASE_URL`, but automated verification used SQLite).
@@ -216,3 +236,42 @@ npm run dev
 ```
 
 All results recorded above are from actual commands and browser interactions performed during this session. Missing evidence is marked Pending rather than fabricated.
+
+---
+
+## 13. Ticket Comments Enhancement
+
+### Scope
+
+Implemented as a separate, non-destructive enhancement after the initial app. Existing ticket, user, session, dashboard, seed, and UI functionality was preserved. No existing module was rebuilt; a new model, schema, service, route file, frontend component, and test file were added, with small imports/registrations in existing files.
+
+### Files added
+
+| File | Purpose |
+|---|---|
+| `backend/app/models/comment.py` | `Comment` table with unique ID, ticket ID, author ID, trimmed-content constraint, and UTC creation timestamp |
+| `backend/app/schemas/comment.py` | `CommentOut` response schema |
+| `backend/app/services/comment_service.py` | Authorization-aware listing/creation and backend content validation |
+| `backend/app/api/routes/comments.py` | `GET`/`POST /api/tickets/{id}/comments` endpoints |
+| `backend/tests/test_comments.py` | Six focused backend tests |
+| `frontend/src/components/CommentSection.jsx` | Chronological comment UI and add-comment form |
+
+Existing files touched only to register/import the new pieces: `backend/app/main.py`, `backend/app/models/__init__.py`, `backend/app/db/session.py`, `backend/app/core/validation.py`, `frontend/src/api/client.js`, `frontend/src/pages/TicketDetail.jsx`, and `frontend/src/styles/components.css`.
+
+### Behavior
+
+- Employees may read/add comments only on tickets they own.
+- Support Staff may read/add comments on every ticket.
+- Comments are permitted on Closed tickets.
+- Input is trimmed and rejected when empty; invalid JSON/non-string content returns 400.
+- Check order remains authentication → ticket existence → authorization → input validation.
+- Comment creation does not modify ticket status or `updated_at`.
+- Responses include author name, author role, formatted timestamp, content, IDs, and ticket ID.
+- The UI shows comments in chronological order with author, role, timestamp, empty state, loading state, and inline errors.
+
+### Verification
+
+- Backend: `28 passed, 1 warning`.
+- Frontend: Vite 8.3.8 production build succeeded.
+- Live browser smoke: Support Staff added comments to an In Progress ticket and a Closed ticket; the owning Employee viewed both and added a comment on the Closed ticket. Whitespace was trimmed, timestamps displayed in Asia/Kolkata format, status/timestamps stayed unchanged, no console errors appeared, and no horizontal overflow was detected at 800 px.
+- A dedicated comment-section screenshot is **Pending** because the browser capture tool was unavailable during this check; no screenshot was fabricated.

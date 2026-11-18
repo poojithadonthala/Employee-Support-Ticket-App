@@ -1,6 +1,6 @@
 # Employee Support Ticket App
 
-A locally runnable Employee Support Ticket Management Application built with React + Vite and FastAPI + SQLAlchemy. Employees can raise and manage their own tickets; Support Staff can review all tickets and advance statuses. Ticket comments are intentionally excluded from this initial version.
+A locally runnable Employee Support Ticket Management Application built with React + Vite and FastAPI + SQLAlchemy. Employees can raise and manage their own tickets; Support Staff can review all tickets and advance statuses. Employees and Support Staff can discuss tickets through comments, including on Closed tickets.
 
 ## Features
 
@@ -12,6 +12,7 @@ A locally runnable Employee Support Ticket Management Application built with Rea
 - Support dashboard with all-ticket counts
 - Support ticket list with title/description/creator search and status/category/priority filters
 - One-step status workflow: Open → In Progress → Resolved → Closed
+- Ticket comments for the ticket owner and Support Staff, including on Closed tickets
 - UTC storage and Asia/Kolkata display (`18 Nov 2026, 09:15 AM`)
 - Five idempotently seeded sample tickets and two demonstration accounts
 - Argon2 password hashing and hashed, revocable server-side sessions
@@ -36,8 +37,9 @@ Key backend locations:
 
 - `backend/app/main.py`: app setup, CORS, error handlers, routes
 - `backend/app/api/deps.py`: authentication and role dependencies
-- `backend/app/services/`: business rules and ticket queries
-- `backend/app/models/`: `User`, `Ticket`, `UserSession`
+- `backend/app/services/`: business rules, ticket queries, and comment logic
+- `backend/app/api/routes/comments.py`: comment list/create endpoints
+- `backend/app/models/`: `User`, `Ticket`, `Comment`, `UserSession`
 - `backend/app/db/session.py`: engine, session factory, table creation
 - `backend/scripts/`: initialization and seed scripts
 
@@ -46,7 +48,7 @@ Key frontend locations:
 - `frontend/src/api/client.js`: single API wrapper
 - `frontend/src/auth/`: auth context and route guard
 - `frontend/src/pages/`: screens
-- `frontend/src/components/`: reusable UI pieces
+- `frontend/src/components/`: reusable UI pieces, including `CommentSection`
 - `frontend/src/styles/`: design tokens, layout, components
 
 ## Prerequisites
@@ -143,6 +145,20 @@ Seeded demonstration logins (using the passwords supplied to the seed command ab
 - Employee: `ravi@company.com`
 - Support Staff: `support@company.com`
 
+## Comment API
+
+Comments use the same session cookie as the rest of the API:
+
+```text
+GET  /api/tickets/{id}/comments
+POST /api/tickets/{id}/comments
+Content-Type: application/json
+
+{ "content": "Your update here" }
+```
+
+`GET` returns comments in chronological order with author, role, content, and formatted timestamp. `POST` stores a trimmed, non-empty comment and returns the created record with HTTP 201. The ticket owner and any Support Staff member may read and add comments; Employees cannot access another Employee's comments. Adding a comment does not change ticket status or the ticket's last-updated timestamp. Closed tickets still accept comments.
+
 ## Tests
 
 Backend:
@@ -151,7 +167,7 @@ Backend:
 .venv\Scripts\python.exe -m pytest backend/tests -v
 ```
 
-Latest recorded result: **22 passed, 1 warning**. The warning is a Starlette TestClient/httpx deprecation notice, not a failure.
+Latest recorded result: **28 passed, 1 warning**. The warning is a Starlette TestClient/httpx deprecation notice, not a failure. Coverage includes comment authorization, ownership, Closed tickets, validation, chronological order, and ticket status preservation.
 
 Frontend production build:
 
@@ -166,7 +182,7 @@ Latest recorded result: build succeeded with Vite 8.3.8.
 
 - Passwords are hashed with Argon2; plain passwords are never stored or returned.
 - Password confirmation is compared exactly; passwords are never trimmed.
-- Full names, ticket titles, and descriptions are trimmed before validation/storage.
+- Full names, ticket titles, descriptions, and comments are trimmed before validation/storage.
 - Emails are trimmed and lowercased for uniqueness and login.
 - Session tokens are random, stored only as SHA-256 hashes, sent in HttpOnly/SameSite=Lax cookies, and revoked on logout.
 - Every protected route resolves the user and role from the database on each request.
@@ -175,7 +191,6 @@ Latest recorded result: build succeeded with Vite 8.3.8.
 
 ## Known gaps
 
-- Ticket comments are deliberately deferred to a separate enhancement after the initial app.
 - No e-mail/SMS notifications, AI classification, chat, payments, or enterprise admin UI are included.
 - `npm audit` currently reports high-severity advisories in Vite's development-server dependency chain (`picomatch`, `fdir`, `tinyglobby`). There is no published non-vulnerable `picomatch` version at the time of verification. These are development-only dependencies; `npm run build` succeeds. Do not expose the Vite dev server to untrusted networks.
 - A PostgreSQL deployment requires installing the chosen driver and supplying `DATABASE_URL`; automated tests were executed against SQLite only.
@@ -188,5 +203,7 @@ Genuine browser captures are in `evidence/`:
 - `01-employee-dashboard.png`
 - `02-login.png`
 - `03-support-tickets.png`
+
+A later browser smoke check also verified the Comment section for Support Staff and Employees, including a Closed ticket, trimmed input, chronological display, and unchanged ticket status/timestamps.
 
 Full verification details, prompts, and defect reports are in `Day4_Poojitha.md`.

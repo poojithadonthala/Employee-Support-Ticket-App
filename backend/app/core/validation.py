@@ -94,6 +94,13 @@ def validate_status(value: str | None) -> str:
     return status
 
 
+def validate_comment_content(value: str | None) -> str:
+    content = trim(value)
+    if not content:
+        raise bad_request("Comment cannot be empty.")
+    return content
+
+
 def validate_ticket_fields(
     title: str | None,
     description: str | None,

@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.api.routes import auth, dashboards, tickets
+from app.api.routes import auth, comments, dashboards, tickets
 from app.core.config import settings
 from app.db.session import create_tables
 
@@ -48,4 +48,5 @@ def health() -> dict[str, str]:
 
 app.include_router(auth.router)
 app.include_router(tickets.router)
+app.include_router(comments.router)
 app.include_router(dashboards.router)
