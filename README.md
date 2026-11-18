@@ -439,8 +439,6 @@ No record in the repository identifies any specific command, browser check, or s
 
 ## Known limitations and remaining gaps
 
-- No GitHub remote was configured at the time of writing, so the submission record lists the GitHub link as Pending.
-- Screenshots beyond the 800 px browser viewport are not available. A dedicated comment-section screenshot is also unavailable.
 - PostgreSQL configuration exists, but automated tests and the recorded runtime checks used SQLite.
 - There is no schema migration tool; `create_all()` creates missing tables but does not migrate existing columns.
 - `npm audit` development-dependency advisories remain unresolved. The production build succeeds, and the Vite development server should not be exposed to untrusted networks.
