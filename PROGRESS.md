@@ -9,6 +9,8 @@
 - Fixed two genuine defects:
   1. SQLite table creation failed because a check constraint used `char_length()`; changed to portable `length()` and retested.
   2. Support search treated `%` and `_` as SQL LIKE wildcards, so searching `%` returned every ticket. Escaped user-supplied LIKE metacharacters and added a regression test.
+- Wrote `README.md` and `Day4_Poojitha.md` with setup, run, and test instructions; prompt/spec/plan references; genuine browser evidence; defect reports; review notes; and explicitly Pending gaps.
+- Ran a final verification pass after all documentation was written: 22 backend tests passed and the frontend production build succeeded.
 
 ## Defect 2 Record
 
@@ -27,7 +29,7 @@ Backend command:
 .venv\Scripts\python.exe -m pytest backend/tests -v
 ```
 
-Result on 18 Nov 2026: **22 passed, 1 warning** (Starlette TestClient/httpx deprecation notice only).
+Final result on 18 Nov 2026: **22 passed, 1 warning in 8.28s** (Starlette TestClient/httpx deprecation notice only).
 
 Frontend command:
 
@@ -36,7 +38,7 @@ cd frontend
 npm run build
 ```
 
-Result on 18 Nov 2026: build succeeded with Vite 8.3.8.
+Final result on 18 Nov 2026: build succeeded with Vite 8.3.8.
 
 Browser smoke results on 18 Nov 2026 at an 800 px viewport:
 
@@ -53,11 +55,13 @@ Browser smoke results on 18 Nov 2026 at an 800 px viewport:
 
 `npm audit` reports high-severity advisories in Vite's development-server dependency chain (`picomatch`/`fdir`/`tinyglobby`) with no non-vulnerable published `picomatch` version available. These are development-only dependencies; the production build succeeds. This remains a known dependency-review gap.
 
-## Pending
+## Pending / Known gaps
 
-- Write `README.md` with setup, run, test, and known-gap details.
-- Create `Day4_Poojitha.md` with product prompt, specification, plan, prompts, genuine evidence, defect report, test results, review notes, and GitHub link. Mark missing screenshots/evidence as Pending rather than inventing them.
-- Final full test run and final documentation commit.
+- GitHub link: Pending — no remote was configured in this workspace.
+- Screenshots at desktop and phone widths beyond 800 px: Pending — no evidence was fabricated.
+- PostgreSQL runtime test: Pending — configuration supports `DATABASE_URL`, but automated verification used SQLite.
+- `npm audit` development-dependency advisories remain unresolved because no fixed published `picomatch` version is available.
+- Ticket comments are intentionally deferred to a separate later enhancement.
 
 ## Commands
 
@@ -75,4 +79,4 @@ npm run build
 
 ## Next step
 
-Commit the verified defect fix separately, then write the final documentation and run one final verification pass.
+No implementation work is pending. Final documentation is included in this milestone commit. Submit the repository; add the GitHub remote/link and additional viewport screenshots if those become available.
