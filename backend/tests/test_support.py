@@ -1,3 +1,5 @@
+from urllib.parse import quote
+
 from tests.helpers import create_ticket, login, make_support_staff, register_employee
 
 
@@ -68,6 +70,14 @@ def test_search_and_filters(client):
     combined = client.get("/api/support/tickets?status=Open&category=Hardware&priority=High").json()
     assert [t["title"] for t in combined] == ["Laptop not charging"]
     assert client.get("/api/support/tickets?status=Unknown").status_code == 400
+
+
+def test_search_treats_sql_like_wildcards_literally(client):
+    support_client(client)
+    for term in ["%", "_"]:
+        response = client.get(f"/api/support/tickets?search={quote(term)}")
+        assert response.status_code == 200, response.text
+        assert response.json() == [], f"Search term {term!r} should match no ticket"
 
 
 def test_status_transitions_only_one_step_forward(client):

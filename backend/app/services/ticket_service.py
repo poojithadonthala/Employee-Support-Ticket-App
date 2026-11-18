@@ -100,11 +100,17 @@ def list_support_tickets(
     if priority_filter:
         query = query.where(Ticket.priority == Priority(priority_filter))
     if search_text:
-        pattern = f"%{search_text}%"
+        # Treat user-supplied LIKE metacharacters as literal text.
+        escaped = (
+            search_text.replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
+        )
+        pattern = f"%{escaped}%"
         query = query.where(
-            Ticket.title.ilike(pattern)
-            | Ticket.description.ilike(pattern)
-            | User.full_name.ilike(pattern)
+            Ticket.title.ilike(pattern, escape="\\")
+            | Ticket.description.ilike(pattern, escape="\\")
+            | User.full_name.ilike(pattern, escape="\\")
         )
 
     query = query.order_by(Ticket.created_at.desc(), Ticket.id.desc())
